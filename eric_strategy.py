@@ -44,14 +44,14 @@ class Strategy:
                 "ask_sz_00": "ask_sz",
             }
         )
-        print(self.options.columns)
-        print(self.options.head(5))
 
         self.underlying = pd.read_csv(
             r"Derivatives-Case-M-E-S-C\data\underlying_data_hour.csv"
         )
         self.underlying.columns = self.underlying.columns.str.lower()
-        self.underlying["datetime"] = pd.to_datetime(self.underlying["date"])
+        self.underlying["date"] = pd.to_datetime(self.underlying["date"])
+        print(self.underlying.columns)
+        print(self.underlying.head(5))
 
     # Define the function to parse a single option symbol
     def parse_option_symbol(self, symbol):
