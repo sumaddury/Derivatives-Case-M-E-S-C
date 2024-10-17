@@ -82,7 +82,7 @@ class Backtester:
         return [hours + 5, remaining_minutes]  # + 5 to account for UTC->EST
 
     def get_expiration_date(self, symbol) -> str:
-        numbers: str = symbol.split(" ")[3]
+        numbers: str = symbol.split(" ")[1]
         date: str = numbers[:6]
         date_yymmdd: str = "20" + date[0:2] + "-" + date[2:4] + "-" + date[4:6]
         return date_yymmdd
@@ -91,7 +91,7 @@ class Backtester:
         """
         example: SPX   240419C00800000
         """
-        numbers: str = symbol.split(" ")[3]
+        numbers: str = symbol.split(" ")[1]
         date: str = numbers[:6]
         date_yymmdd: str = "20" + date[0:2] + "-" + date[2:4] + "-" + date[4:6]
         action: str = numbers[6]

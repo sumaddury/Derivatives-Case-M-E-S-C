@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class Strategy:
-    def __init__(self, start_date, end_date) -> None:
+    def __init__(self, start_date, end_date, options_data, underlying) -> None:
         self.capital: float = 100_000_000
         self.portfolio_value: float = 0
         self.spend_lim_ratio = 0.9
@@ -13,11 +13,12 @@ class Strategy:
         self.start_date: datetime = start_date
         self.end_date: datetime = end_date
 
-        self.options: pd.DataFrame = pd.read_csv("data/cleaned_options_data.csv")
+        self.options: pd.DataFrame = pd.read_csv(options_data)
         self.options["datetime"] = pd.to_datetime(
             self.options["ts_recv"], format="%Y-%m-%dT%H:%M:%S.%fZ"
         )
-        symbol_parts = self.options["symbol"].str.split(" ", expand=True)[3]
+
+        symbol_parts = self.options["symbol"].str.split(" ", expand=True)[1]
         self.options["exp_date"] = pd.to_datetime(symbol_parts.str[:6], format="%y%m%d")
         self.options = self.options[self.options["exp_date"] <= self.end_date]
         self.options["action"] = symbol_parts.str[6]
@@ -42,8 +43,8 @@ class Strategy:
         ).dt.days / 365.0
         self.options["fair_value"] = (self.options["bidp"] + self.options["askp"]) / 2.0
 
-        self.underlying = pd.read_csv(r"data\spx_minute_level_data_jan_mar_2024.csv")
-        print(self.underlying.columns, flush=True)
+        self.underlying = pd.read_csv(underlying)
+        # print(self.underlying.columns, flush=True)
         self.underlying = self.underlying.loc[self.underlying["price"] > 0]
         self.underlying["date"] = pd.to_datetime(
             self.underlying["date"], format="%Y%m%d"
