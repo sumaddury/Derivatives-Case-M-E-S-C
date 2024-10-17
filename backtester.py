@@ -101,7 +101,6 @@ class Backtester:
     def check_option_is_open(self, row: pd.Series) -> bool:
         same: pd.DataFrame = self.open_orders[
             (self.open_orders["option_symbol"] == row["option_symbol"])
-            & (self.open_orders["datetime"] == row["datetime"])
         ]
         if len(same) > 0:
             assert len(same) == 1
@@ -194,6 +193,7 @@ class Backtester:
                         if option_metadata[1] == "C"
                         else options_cost + 0.1 * price
                     )
+                    margin = 0 if self.check_option_is_open(row) else margin
                     if self.capital >= margin and (
                         self.capital - options_cost + 0.5 > 0
                     ):
@@ -204,13 +204,16 @@ class Backtester:
                             self.open_orders = pd.concat(
                                 [self.open_orders, new_row], ignore_index=True
                             )
-                else:
+                elif row["action"] == "S":
                     options_cost = order_size * 100 * buy_price
                     margin = (
                         options_cost + 0.1 * strike_price
                         if option_metadata[1] == "C"
                         else options_cost + 0.1 * price
                     )
+                    # already_existing = self.open_orders[self.open_orders["option_symbol"] == row["option_symbol"]]
+                    # if len(already_existing) > 0:
+
                     if self.capital >= margin:
                         self.capital += order_size * buy_price * 100
 
@@ -262,7 +265,7 @@ class Backtester:
                                     * 100
                                     * order["running_ask_px_00"]
                                 )
-                    else:
+                    elif order["action"] == "S":
                         if put_call == "C":
                             if underlying_price > strike_price:
                                 loss = (
@@ -322,7 +325,7 @@ class Backtester:
                         self.capital -= loss
                     order["running_bid_px_00"] = current_ask_price
 
-            self.portfolio_value = max(self.portfolio_value, 0)
+            # self.portfolio_value = max(self.portfolio_value, 0)
             self.open_orders = self.open_orders[
                 self.open_orders["expiration_date"] != day_str
             ]
@@ -349,8 +352,8 @@ class Backtester:
                 self.portfolio_value += 0.9 * current_price
                 self.capital -= current_price
             elif order["action"] == "S":
-                self.portfolio_value -= 1.1 * current_price
-                self.capital += current_price
+                # self.portfolio_value -= 1.1 * current_price
+                self.capital -= 0.1 * current_price
 
         self.pnl.append(self.capital + self.portfolio_value)
         print(
@@ -376,12 +379,12 @@ class Backtester:
                 )
             ptr += 1
 
-        if self.max_drawdown < 0:
+        if self.max_drawdown <= 0:
             self.max_drawdown = 1 * math.pow(10, -10)
 
         print(f"Max Drawdown: {self.max_drawdown}")
 
-        self.overall_return = 100 * ((self.pnl[-1] - 100_000_000) / 100_000_000)
+        self.overall_return = 100 * (self.pnl[-1] / 100_000_000)
         print(f"Overall Return: {self.overall_return}%")
 
         percentage_returns = []
@@ -403,13 +406,10 @@ class Backtester:
             self.sharpe_ratio = 0.0
             print("Sharpe Ratio: Undefined (Standard Deviation = 0)")
 
-        if self.max_drawdown > 0 and self.sharpe_ratio > 0:
-            self.overall_score = (
-                self.overall_return / self.max_drawdown
-            ) * self.sharpe_ratio
-            print(f"Overall Score: {self.overall_score}")
-        else:
-            print("Cannot calculate overall score (Max Drawdown or Sharpe Ratio <= 0)")
+        self.overall_score = (
+            self.overall_return / self.max_drawdown
+        ) * self.sharpe_ratio
+        print(f"Overall Score: {self.overall_score}")
 
     def plot_pnl(self):
         if not isinstance(self.pnl, list) or len(self.pnl) == 0:

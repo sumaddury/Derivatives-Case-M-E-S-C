@@ -5,12 +5,12 @@ from datetime import datetime
 
 class Strategy:
 
-    def __init__(self) -> None:
+    def __init__(self, start_date, end_date) -> None:
         self.capital: float = 100_000_000
         self.portfolio_value: float = 0
 
-        self.start_date: datetime = datetime(2024, 1, 1)
-        self.end_date: datetime = datetime(2024, 3, 30)
+        self.start_date: datetime = start_date
+        self.end_date: datetime = end_date
 
         self.options: pd.DataFrame = pd.read_csv("data/cleaned_options_data.csv")
         self.options["day"] = self.options["ts_recv"].apply(lambda x: x.split("T")[0])
@@ -20,7 +20,7 @@ class Strategy:
 
     def generate_orders(self) -> pd.DataFrame:
         orders = []
-        num_orders = 1000
+        num_orders = 150
 
         for _ in range(num_orders):
             row = self.options.sample(n=1).iloc[0]
