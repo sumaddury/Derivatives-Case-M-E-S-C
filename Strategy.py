@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 class Strategy:
     def __init__(self, start_date, end_date, options_data, underlying) -> None:
         self.capital: float = 100_000_000
-        self.threshold = -250
+        self.threshold = -150
 
         self.start_date: datetime = start_date
         self.end_date: datetime = end_date
