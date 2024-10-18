@@ -83,19 +83,19 @@ class Backtester:
 
     def get_expiration_date(self, symbol) -> str:
         numbers: str = symbol.split(" ")[1]
-        date: str = numbers[:6]
-        date_yymmdd: str = "20" + date[0:2] + "-" + date[2:4] + "-" + date[4:6]
+        date: str = numbers[:8]
+        date_yymmdd: str = date[0:4] + "-" + date[4:6] + "-" + date[6:8]
         return date_yymmdd
 
     def parse_option_symbol(self, symbol) -> List:
         """
-        example: SPX   240419C00800000
+        EXAMPLE: SPX 20230120P2800000
         """
         numbers: str = symbol.split(" ")[1]
-        date: str = numbers[:6]
-        date_yymmdd: str = "20" + date[0:2] + "-" + date[2:4] + "-" + date[4:6]
-        action: str = numbers[6]
-        strike_price: float = float(numbers[7:]) / 1000
+        date: str = numbers[:8]
+        date_yymmdd: str = date[0:4] + "-" + date[4:6] + "-" + date[6:8]
+        action: str = numbers[8]
+        strike_price: float = int(numbers[9:]) / 1000
         return [datetime.strptime(date_yymmdd, "%Y-%m-%d"), action, strike_price]
 
     def check_option_is_open(self, row: pd.Series) -> bool:

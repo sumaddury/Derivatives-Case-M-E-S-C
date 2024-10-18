@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 class Strategy:
@@ -19,24 +22,17 @@ class Strategy:
         )
 
         symbol_parts = self.options["symbol"].str.split(" ", expand=True)[1]
-        self.options["exp_date"] = pd.to_datetime(symbol_parts.str[:6], format="%y%m%d")
+        self.options["exp_date"] = pd.to_datetime(symbol_parts.str[:8], format="%Y%m%d")
         self.options = self.options[self.options["exp_date"] <= self.end_date]
-        self.options["action"] = symbol_parts.str[6]
-        self.options["strike_price"] = symbol_parts.str[7:].astype(float) / 1000
-        self.options = self.options.rename(
-            columns={
-                "bid_px_00": "bidp",
-                "ask_px_00": "askp",
-                "bid_sz_00": "bid_sz",
-                "ask_sz_00": "ask_sz",
-            }
-        )
+        self.options["action"] = symbol_parts.str[8]
+        self.options["strike_price"] = symbol_parts.str[9:].astype(float) / 1000
+
         self.options["datetime"] = (
             pd.to_datetime(self.options["datetime"])
-            .dt.tz_localize("UTC")
-            .dt.tz_convert("US/Eastern")
-            .dt.tz_localize(None)
-        )
+            # .dt.tz_localize("UTC")
+            # .dt.tz_convert("US/Eastern")
+            # .dt.tz_localize(None)
+        ) + pd.Timedelta(hours=5)
         self.options["date"] = self.options["datetime"].dt.date
         self.options["till_exp"] = (
             self.options["exp_date"] - self.options["datetime"]
